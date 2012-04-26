@@ -47,7 +47,7 @@ Possible options for the plugin are :
     expires => 3600,
     fields => {
               user => {
-                      inflate => sub { return Some::Package->new( $_[0]->id() ) },
+                      inflate => sub { return Some::Package->new( $_[0] ) },
                       deflate => sub { $_[0]->id() },
               }
     }

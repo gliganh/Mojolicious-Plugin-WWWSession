@@ -39,9 +39,7 @@ In you apllication module add the fallowing lines
 
 =head1 Using the session
 
-=over 4
-
-=item * Settings values
+=head2 Settings values
 
 There are two ways you can save a value on the session :
 
@@ -57,8 +55,8 @@ assigned the new value, if it doesn't it will be added.
 When you set a value for a field it will be validated first (see setup_field() ). 
 If the value doesn't pass validation the field will keep it's old value and the 
 set method will return 0. If everything goes well the set method will return 1.
-    
-=item * Retrieving values
+
+=head2 Retrieving values
 
     my $user = $session->get('user');
     
@@ -68,9 +66,6 @@ set method will return 0. If everything goes well the set method will return 1.
     
 If the requested field ("user" in the example above) already exists it will return 
 it's value, otherwise will return C<undef>
-
-=back
-
 
 =head1 Possible options for the plugin
 
@@ -86,8 +81,8 @@ Here is an exmple containing the options you can pass to the plugin:
               user => {
                       inflate => sub { return Some::Package->new( $_[0] ) },
                       deflate => sub { $_[0]->id() },
-              		  }
-  			  age => {
+                      }
+              age => {
                      filter => [21..99],
                      }
     }

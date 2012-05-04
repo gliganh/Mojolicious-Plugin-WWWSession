@@ -172,13 +172,6 @@ sub register {
         }
     );
 
-    $app->hook(
-        after_dispatch => sub {
-            my $self = shift;
-
-            $self->stash('mojo.session')->flush;
-        }
-    );
 }
 
 

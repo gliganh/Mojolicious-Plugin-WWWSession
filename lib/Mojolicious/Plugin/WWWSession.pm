@@ -107,33 +107,7 @@ See WWW::Session::Storage::Memcached for more details
 
 =head1 Using the session
 
-=head2 Settings values
-
-There are two ways you can save a value on the session :
-
-    $session->set('user',$user);
-    
-    or 
-    
-    $session->user($user);
-    
-If the requested field ("user" in the example above) already exists it will be 
-assigned the new value, if it doesn't it will be added.
-
-When you set a value for a field it will be validated first (see setup_field() ). 
-If the value doesn't pass validation the field will keep it's old value and the 
-set method will return 0. If everything goes well the set method will return 1.
-
-=head2 Retrieving values
-
-    my $user = $session->get('user');
-    
-    or
-    
-    my $user = $session->user();
-    
-If the requested field ("user" in the example above) already exists it will return 
-it's value, otherwise will return C<undef>
+This session can be used in the exact same way the strandard Mojolicious session is used
 
 =head1 Possible options for the plugin
 
@@ -154,7 +128,7 @@ Here is an exmple containing the options you can pass to the plugin:
                      filter => [21..99],
                      }
     }
-    1
+    
 See WWW:Session for more details on possible options and on how you can use the session
 
 If you use the "Storable" serialization engine you can store objects in the session. 

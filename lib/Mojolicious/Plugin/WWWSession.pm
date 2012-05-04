@@ -182,8 +182,6 @@ sub register {
     
     WWW::Session->import(%$args);
 
-    my $stash_key = 'mojo.session';
-
     $app->hook(
         before_dispatch => sub {
             my $self = shift;
@@ -192,9 +190,11 @@ sub register {
 
             $self->cookie(sid => $sid);
 
-            my $session = WWW::Session->find_or_create($sid);
+            my %session;
 
-            $self->stash($stash_key => $session);
+            tie %session, 'WWW::Session' , $sid, {sid => $sid};
+
+            $self->stash('mojo.session' => \%session);
         }
     );
 
@@ -202,7 +202,7 @@ sub register {
         after_dispatch => sub {
             my $self = shift;
 
-            $self->stash($stash_key)->flush;
+            $self->stash('mojo.session')->flush;
         }
     );
 }

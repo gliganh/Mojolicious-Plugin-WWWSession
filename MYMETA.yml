@@ -1,5 +1,5 @@
 ---
-abstract: 'WWW:Session sessions for Mojolicious'
+abstract: 'Use WWWW::Session with Mojolicious'
 author:
   - 'Gligan Calin Horea <gliganh@gmail.com>'
 build_requires:
@@ -23,4 +23,4 @@ requires:
   Mojolicious::Plugin: 0
   Test::More: 0
   WWW::Session: 0.03
-version: 0.01
+version: 0.04

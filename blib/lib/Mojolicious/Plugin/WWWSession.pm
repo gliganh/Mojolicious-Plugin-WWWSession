@@ -5,22 +5,28 @@ use warnings;
 
 =head1 NAME
 
-Mojolicious::Plugin::WWWSession - WWW:Session sessions for Mojolicious
+Mojolicious::Plugin::WWWSession - Use WWWW::Session with Mojolicious
 
 =head1 VERSION
 
-Version 0.01
+Version 0.04
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.04';
 
 
 =head1 SYNOPSIS
 
-This module allows you to overwrite the standard Mojolicious session with a WWW:Session object and enjoy all the goodies it provides
+This module allows you to overwrite the standard Mojolicious session with a WWW::Session object and enjoy all the goodies it provides
 
 Example :
+
+=head2 Storage backends
+
+You can use one or more of the fallowing backends : 
+
+=head3 File storage
 
 In you apllication module add the fallowing lines 
 
@@ -36,8 +42,76 @@ In you apllication module add the fallowing lines
         ...
     }
 
+See WWW::Session::Storage::File for more details
 
-Possible options for the plugin are :
+=head3 Database storage
+
+In you apllication module add the fallowing lines 
+
+    use Mojolicious::Plugin::WWWSession;
+
+    sub startup {
+    
+        ...
+    
+        #Overwrite session
+        $self->plugin( WWWSession => { storage => [ MySQL => { 
+                                                            dbh => $dbh,
+                                                            table => 'sessions',
+                                                            fields => {
+                                                                    sid => 'session_id',
+                                                                    expires => 'expires',
+                                                                    data => 'data'
+                                                            }
+                                                    ] 
+                                      } );
+
+        ...
+    }
+
+The "fields" hasref contains the mapping of session internal data to the column names from MySQL. 
+The keys are the session fields ("sid","expires" and "data") and must all be present. 
+
+The MySQL types of the columns should be :
+
+=over 4
+
+=item * sid => varchar(32)
+
+=item * expires => DATETIME or TIMESTAMP
+
+=item * data => text
+
+=back
+
+See WWW::Session::Storage::MySQL for more details
+
+=head3 Memcached storage
+
+In you apllication module add the fallowing lines 
+
+    use Mojolicious::Plugin::WWWSession;
+
+    sub startup {
+    
+        ...
+    
+        #Overwrite session
+        $self->plugin( WWWSession => { storage => ['Memcached' => {servers => ['127.0.0.1:11211']}] } );
+
+        ...
+    }
+
+See WWW::Session::Storage::Memcached for more details
+
+
+=head1 Using the session
+
+This session can be used in the exact same way the strandard Mojolicious session is used
+
+=head1 Possible options for the plugin
+
+Here is an exmple containing the options you can pass to the plugin:
 
     {
     storage => [ 'File' => { path => '/tmp/sessions'},
@@ -47,9 +121,12 @@ Possible options for the plugin are :
     expires => 3600,
     fields => {
               user => {
-                      inflate => sub { return Some::Package->new( $_[0]->id() ) },
+                      inflate => sub { return Some::Package->new( $_[0] ) },
                       deflate => sub { $_[0]->id() },
-              }
+                      }
+              age => {
+                     filter => [21..99],
+                     }
     }
     
 See WWW:Session for more details on possible options and on how you can use the session
@@ -79,8 +156,6 @@ sub register {
     
     WWW::Session->import(%$args);
 
-    my $stash_key = 'mojo.session';
-
     $app->hook(
         before_dispatch => sub {
             my $self = shift;
@@ -89,9 +164,11 @@ sub register {
 
             $self->cookie(sid => $sid);
 
-            my $session = WWW::Session->find_or_create($sid);
+            my %session;
 
-            $self->stash($stash_key => $session);
+            tie %session, 'WWW::Session' , $sid, {sid => $sid};
+
+            $self->stash('mojo.session' => \%session);
         }
     );
 
@@ -99,7 +176,7 @@ sub register {
         after_dispatch => sub {
             my $self = shift;
 
-            $self->stash($stash_key)->flush;
+            $self->stash('mojo.session')->flush;
         }
     );
 }

@@ -124,21 +124,27 @@
 .\" ========================================================================
 .\"
 .IX Title "Mojolicious::Plugin::WWWSession 3"
-.TH Mojolicious::Plugin::WWWSession 3 "2012-04-25" "perl v5.14.2" "User Contributed Perl Documentation"
+.TH Mojolicious::Plugin::WWWSession 3 "2012-05-04" "perl v5.14.2" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
 .nh
 .SH "NAME"
-Mojolicious::Plugin::WWWSession \- WWW:Session sessions for Mojolicious
+Mojolicious::Plugin::WWWSession \- Use WWWW::Session with Mojolicious
 .SH "VERSION"
 .IX Header "VERSION"
-Version 0.01
+Version 0.04
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-This module allows you to overwrite the standard Mojolicious session with a WWW:Session object and enjoy all the goodies it provides
+This module allows you to overwrite the standard Mojolicious session with a WWW::Session object and enjoy all the goodies it provides
 .PP
 Example :
+.SS "Storage backends"
+.IX Subsection "Storage backends"
+You can use one or more of the fallowing backends :
+.PP
+\fIFile storage\fR
+.IX Subsection "File storage"
 .PP
 In you apllication module add the fallowing lines
 .PP
@@ -156,9 +162,77 @@ In you apllication module add the fallowing lines
 \&    }
 .Ve
 .PP
-Possible options for the plugin are :
+See WWW::Session::Storage::File for more details
 .PP
-.Vb 12
+\fIDatabase storage\fR
+.IX Subsection "Database storage"
+.PP
+In you apllication module add the fallowing lines
+.PP
+.Vb 1
+\&    use Mojolicious::Plugin::WWWSession;
+\&
+\&    sub startup {
+\&    
+\&        ...
+\&    
+\&        #Overwrite session
+\&        $self\->plugin( WWWSession => { storage => [ MySQL => { 
+\&                                                            dbh => $dbh,
+\&                                                            table => \*(Aqsessions\*(Aq,
+\&                                                            fields => {
+\&                                                                    sid => \*(Aqsession_id\*(Aq,
+\&                                                                    expires => \*(Aqexpires\*(Aq,
+\&                                                                    data => \*(Aqdata\*(Aq
+\&                                                            }
+\&                                                    ] 
+\&                                      } );
+\&
+\&        ...
+\&    }
+.Ve
+.PP
+The \*(L"fields\*(R" hasref contains the mapping of session internal data to the column names from MySQL. 
+The keys are the session fields (\*(L"sid\*(R",\*(L"expires\*(R" and \*(L"data\*(R") and must all be present.
+.PP
+The MySQL types of the columns should be :
+.IP "\(bu" 4
+sid => varchar(32)
+.IP "\(bu" 4
+expires => \s-1DATETIME\s0 or \s-1TIMESTAMP\s0
+.IP "\(bu" 4
+data => text
+.PP
+See WWW::Session::Storage::MySQL for more details
+.PP
+\fIMemcached storage\fR
+.IX Subsection "Memcached storage"
+.PP
+In you apllication module add the fallowing lines
+.PP
+.Vb 1
+\&    use Mojolicious::Plugin::WWWSession;
+\&
+\&    sub startup {
+\&    
+\&        ...
+\&    
+\&        #Overwrite session
+\&        $self\->plugin( WWWSession => { storage => [\*(AqMemcached\*(Aq => {servers => [\*(Aq127.0.0.1:11211\*(Aq]}] } );
+\&
+\&        ...
+\&    }
+.Ve
+.PP
+See WWW::Session::Storage::Memcached for more details
+.SH "Using the session"
+.IX Header "Using the session"
+This session can be used in the exact same way the strandard Mojolicious session is used
+.SH "Possible options for the plugin"
+.IX Header "Possible options for the plugin"
+Here is an exmple containing the options you can pass to the plugin:
+.PP
+.Vb 10
 \&    {
 \&    storage => [ \*(AqFile\*(Aq => { path => \*(Aq/tmp/sessions\*(Aq},
 \&                 \*(AqMemcached\*(Aq => { servers => [\*(Aq127.0.0.1\*(Aq] }
@@ -167,9 +241,12 @@ Possible options for the plugin are :
 \&    expires => 3600,
 \&    fields => {
 \&              user => {
-\&                      inflate => sub { return Some::Package\->new( $_[0]\->id() ) },
+\&                      inflate => sub { return Some::Package\->new( $_[0] ) },
 \&                      deflate => sub { $_[0]\->id() },
-\&              }
+\&                      }
+\&              age => {
+\&                     filter => [21..99],
+\&                     }
 \&    }
 .Ve
 .PP
